@@ -40,13 +40,15 @@ class GridMinecraftEnv(Env):
 
         # define Grid Minecraft environment
         self.world_map = [['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                          ['X', '.', '.', '.', '.', '.', '.', '.', '.', 'C', 'X'],
-                          ['X', 'X', 'X', '.', 'C', 'C', 'C', 'C', '.', 'K', 'X'],
-                          ['X', '.', '.', '.', '.', '.', '.', 'C', 'C', 'C', 'X'],
-                          ['X', 'C', '.', 'X', 'C', '.', 'X', 'X', 'X', 'X', 'X'],
-                          ['X', 'B', '.', 'X', '.', '.', '.', '.', 'M', 'G', 'X'],
-                          ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']]
+                          ['X', '.', '.', '.', '.', '.', '.', '.', '.', 'X', 'C'],
+                          ['X', 'X', 'X', '.', 'X', 'X', 'X', 'X', '.', 'K', 'C'],
+                          ['X', '.', '.', '.', '.', '.', '.', 'X', 'X', 'C', 'C'],
+                          ['C', 'C', '.', 'X', 'X', '.', 'X', 'X', 'X', 'X', 'X'],
+                          ['C', 'B', '.', 'X', '.', '.', '.', '.', 'M', 'G', 'X'],
+                          ['C', 'C', 'C', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']]
         self.reviving_spot = (1,1)
+
+        self.max_horizon = 100
 
         self.R_running_cost = -0.01
         self.R_dead_cost    = -10.0
@@ -60,6 +62,7 @@ class GridMinecraftEnv(Env):
         self.observation_space = spaces.Discrete(self.nS)
 
         # define internal state
+        self.cur_steps = None
         self.actor_map = None
         self.actor_spot = None
         self.actor_status = {'key': None, 'sword': None}
@@ -170,6 +173,7 @@ class GridMinecraftEnv(Env):
         """
 
         # reset internal state
+        self.cur_steps = 0
         self.actor_spot = tuple(self.reviving_spot)
         self.actor_status['key'] = False
         self.actor_status['sword'] = False
@@ -183,7 +187,7 @@ class GridMinecraftEnv(Env):
         self.r = None
         self.done = False
 
-        return self.s
+        return GridMinecraftEnv._render_env(self.s)
 
 
     def step(self, a):
@@ -205,9 +209,11 @@ class GridMinecraftEnv(Env):
         r = None
         done = None
 
+        self.cur_steps += 1
+
         # check if the environment is at an absorbing state
         if self.done:
-            return (self.s, 0, self.done, {
+            return (GridMinecraftEnv._render_env(self.s), 0, self.done, {
                 'actor_spot': self.actor_spot, 
                 'actor_status': self.actor_status})
 
@@ -293,13 +299,17 @@ class GridMinecraftEnv(Env):
         s, self.actor_map = GridMinecraftEnv._generate_observation(
             self.actor_map, self.actor_spot, self.actor_status)
 
+        # check horizon
+        if self.cur_steps >= self.max_horizon:
+            done = True
+
         # update cache
         self.a = a
         self.s = s
         self.r = r
         self.done = done
 
-        return (s, r, done, {
+        return (GridMinecraftEnv._render_env(self.s), self.r, self.done, {
             'actor_spot': self.actor_spot,
             'actor_status': self.actor_status})
 
