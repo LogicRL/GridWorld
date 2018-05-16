@@ -37,8 +37,6 @@ class QLearningAgent(object):
 
     self.n_action = n_action
 
-    #self.P = dict() # state transition model - {s: [{s_next: count}, ...]}
-    #self.R = dict() # reward model - {s: (r_ave, count)}
     self.Q = dict() # state-action value model - {s: [q, ...]}
 
 
