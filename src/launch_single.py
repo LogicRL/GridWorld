@@ -95,14 +95,14 @@ def main():
 
   # run episodes
   episodes = 1000
-  epsilon_max = 1.0
+  epsilon_max = 0.2
   epsilon_decay = 1e-3
   epsilon_min = 0.01
   lst_return = []
   for episode in range(episodes):
     epsilon = max(epsilon_max - epsilon_decay * episode, epsilon_min)
     
-    render = False
+    render = True
     if episode == episodes - 1:
       render = True
 
