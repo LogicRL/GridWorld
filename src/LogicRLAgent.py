@@ -295,8 +295,11 @@ class LogicRLAgent(object):
     @param pause_plan The switch to pause while showing the initial plan.
     @param render The switch to enable rendering.
     @param verbose The switch to enable verbose log.
-    @return A boolean indicating if the agent solve the game within the maximum 
-            number of episodes.
+    @return success A boolean indicating if the agent solve the game within the maximum 
+                    number of episodes.
+    @return lst_R The return sequence for lower-level agents.
+    @return lst_R_env The return sequence from environment.
+    @rturn lst_steps The sequence of numbers of steps until done.
     """
 
     # print the initial symbolic plan
@@ -312,6 +315,9 @@ class LogicRLAgent(object):
 
     # loop through the episodes
     success = False
+    lst_R = []
+    lst_R_env = []
+    lst_steps = []
     for episode in range(max_episodes):
       if verbose:
         print('')
@@ -320,6 +326,10 @@ class LogicRLAgent(object):
       episode_success, lst_r, lst_r_env = self.runEpisode(learn=True, render=render, verbose=verbose)
       R = np.sum(lst_r)
       R_env = np.sum(lst_r_env)
+      
+      lst_R.append(R)
+      lst_R_env.append(R_env)
+      lst_steps.append(len(lst_r_env))
 
       if not verbose:
         print('[ INFO ] episode: %d / %d, R: %f, R_env: %f' % (
@@ -328,7 +338,7 @@ class LogicRLAgent(object):
       if episode_success:
         success = True
 
-    return success
+    return success, lst_R, lst_R_env, lst_steps
 
 
 def main():
