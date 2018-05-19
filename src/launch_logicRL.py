@@ -46,6 +46,9 @@ def parse_arguments():
     parser.add_argument('--max_episodes', dest='max_episodes',
                         type=int, default=1000,
                         help="Maximum number of episodes to run the LogicRL agent.")
+    parser.add_argument('--trials', dest='trials',
+                        type=int, default=10,
+                        help="Number of trials to run in experiment mode.")
 
     # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
     parser_group = parser.add_mutually_exclusive_group(required=False)
@@ -112,14 +115,12 @@ def main():
 
   # experiment mode
   if args.exp:
-    max_trials = 20
-
     mat_R = []
     mat_R_env = []
     mat_steps = []
 
     # run trials
-    for trial in range(max_trials):
+    for trial in range(args.trials):
       agent = LogicRLAgent(
         env, encoder, fname_domain, fname_problem, static_predicate_names,
         epsilon_max=1.0, epsilon_decay=1e-3, epsilon_min=0.01, lr=0.01, gamma=1.0)
