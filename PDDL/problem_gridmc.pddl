@@ -15,7 +15,6 @@
     (:init
         (keyExists key1)
         (chestExists chest1)
-        (gateExists gate1)
         (monsterExists monster1)
         (guardedGateExists monster1 gate1)
     )

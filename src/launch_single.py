@@ -45,6 +45,7 @@ def run_episode(env, agent, epsilon=0, lr=0.01, gamma=1.0, learn=True, render=Fa
   @param learn The switch to turn on learning.
   @param render The switch to turn on rendering.
   @param verbose The switch to turn on verbose logging.
+  @return acc_rewards The accumulative environment rewards.
   """
 
   acc_rewards = 0
@@ -102,7 +103,7 @@ def main():
   for episode in range(episodes):
     epsilon = max(epsilon_max - epsilon_decay * episode, epsilon_min)
     
-    render = True
+    render = False
     if episode == episodes - 1:
       render = True
 
