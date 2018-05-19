@@ -194,13 +194,13 @@ class LogicRLAgent(object):
           print('[ INFO ] failed to find feasible plan')
         continue
 
-      # check if the goal already satisfied
+      # check if goals already satisfied
       if len(plan) == 1:
         assert(len(plan[0][1].intersection(g)) == len(g))
         done = True
-        continue
         if verbose:
           print('[ INFO ] subgoal satisfied')
+        return True
         
       # extract states and operator from plan
       ss_cur = plan[0][1]
@@ -257,9 +257,19 @@ class LogicRLAgent(object):
       if learn:
         self.feedbackToAgent(agent_name, s, a, s_next, r, done)
 
+      # check if goals satisfied
+      if len(plan) == 1:
+        if len(ss_next.intersection(g)) == len(g):
+          done = True
+          if verbose:
+            print('[ INFO ] subgoal satisfied')
+          return True
+
       # update states
       s = s_next
       ss = ss_next
+
+    return False
 
 
   def autoplay(self, max_episodes, pause_plan=False, render=False, verbose=False):
@@ -291,7 +301,10 @@ class LogicRLAgent(object):
         print('')
       print('[ INFO ] episode: %d / %d' % (episode, max_episodes))
 
-      self.runEpisode(learn=True, render=render, verbose=verbose)
+      success = self.runEpisode(learn=True, render=render, verbose=verbose)
+
+      if success:
+        return True
 
     return False
 
