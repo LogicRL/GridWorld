@@ -77,8 +77,13 @@ def main():
     env, encoder, fname_domain, fname_problem, static_predicate_operators,
     epsilon_max=1.0, epsilon_decay=1e-3, epsilon_min=0.01, lr=0.01, gamma=1.0)
 
-  success = agent.autoplay(max_episodes=args.max_episodes, pause_plan=args.plan, render=args.render, verbose=True)
+  success = agent.autoplay(
+    max_episodes=args.max_episodes, 
+    pause_plan=args.plan, render=args.render, verbose=False)
   print('success: %s' % (success))
+
+  # run validation episode
+  agent.runEpisode(learn=False, render=True, verbose=True)
 
 
 if __name__ == '__main__':

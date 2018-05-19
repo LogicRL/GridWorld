@@ -13,6 +13,7 @@ __copyright__   = "Copyright (C) 2018, David Qiu. All rights reserved."
 
 
 import sys
+import time
 import argparse
 import numpy as np
 import gym
@@ -159,19 +160,26 @@ class LogicRLAgent(object):
     return plan
 
 
-  def runEpisode(self, learn=True, render=False, verbose=False):
+  def runEpisode(self, learn=True, render=False, render_sleep=0.5, verbose=False):
     """
     Run an episode.
 
     @param learn The switch to enable online learning.
     @param render The switch to enable rendering.
+    @param render_sleep The interval to sleep after rendering.
     @param verbose The switch to enable verbose log.
-    @return A boolean indicating if the agent solve the game within the maximum 
-            number of episodes.
+    @return success A boolean indicating if the agent solve the game within the maximum 
+                    number of episodes.
+    @return lst_r The reward sequence given to the lower-level reinforcement 
+                  learning agent.
+    @return lst_r_env The environment reward sequence.
     """
 
     env = self.env
     g = self.predefined_goals # already converted to predicate sets
+
+    lst_r = []
+    lst_r_env = []
 
     # reset the environment
     s = env.reset()
@@ -180,6 +188,7 @@ class LogicRLAgent(object):
     # render if requested
     if render:
       env.render()
+      time.sleep(render_sleep)
 
     # find initial symbolic plan
     plan = self.findSymbolicPlan(ss)
@@ -200,7 +209,7 @@ class LogicRLAgent(object):
         done = True
         if verbose:
           print('[ INFO ] subgoal satisfied')
-        return True
+        return True, lst_r, lst_r_env
         
       # extract states and operator from plan
       ss_cur = plan[0][1]
@@ -216,8 +225,9 @@ class LogicRLAgent(object):
       ss_next = self.encodeSymbolicState(s_next)
 
       # print state transition
-      if len(ss.difference(ss_next)) > 0 or len(ss_next.difference(ss)) > 0:
-        print_symbolic_state_transition(ss, ss_next)
+      if verbose:
+        if len(ss.difference(ss_next)) > 0 or len(ss_next.difference(ss)) > 0:
+          print_symbolic_state_transition(ss, ss_next)
 
       # determine reward for RL agent
       r = 0
@@ -252,10 +262,15 @@ class LogicRLAgent(object):
       # render if requested
       if render:
         env.render()
+        time.sleep(render_sleep)
 
       # feedback to agent
       if learn:
         self.feedbackToAgent(agent_name, s, a, s_next, r, done)
+
+      # record rewards
+      lst_r.append(r)
+      lst_r_env.append(r_env)
 
       # check if goals satisfied
       if len(plan) == 1:
@@ -263,13 +278,13 @@ class LogicRLAgent(object):
           done = True
           if verbose:
             print('[ INFO ] subgoal satisfied')
-          return True
+          return True, lst_r, lst_r_env
 
       # update states
       s = s_next
       ss = ss_next
 
-    return False
+    return False, lst_r, lst_r_env
 
 
   def autoplay(self, max_episodes, pause_plan=False, render=False, verbose=False):
@@ -296,17 +311,24 @@ class LogicRLAgent(object):
     print('')
 
     # loop through the episodes
+    success = False
     for episode in range(max_episodes):
       if verbose:
         print('')
-      print('[ INFO ] episode: %d / %d' % (episode, max_episodes))
+        print('[ INFO ] episode: %d / %d' % (episode, max_episodes))
 
-      success = self.runEpisode(learn=True, render=render, verbose=verbose)
+      episode_success, lst_r, lst_r_env = self.runEpisode(learn=True, render=render, verbose=verbose)
+      R = np.sum(lst_r)
+      R_env = np.sum(lst_r_env)
 
-      if success:
-        return True
+      if not verbose:
+        print('[ INFO ] episode: %d / %d, R: %f, R_env: %f' % (
+          episode, max_episodes, R, R_env))
 
-    return False
+      if episode_success:
+        success = True
+
+    return success
 
 
 def main():
