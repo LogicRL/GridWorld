@@ -8,15 +8,13 @@
         key1 - key
         chest1 - chest
         sword1 - sword
-        monster1 - monster
-        gate1 - gate
+        ggate1 - ggate
     )
     
     (:init
         (keyExists key1)
         (chestExists chest1)
-        (monsterExists monster1)
-        (guardedGateExists monster1 gate1)
+        (guardedGateExists ggate1)
     )
     
     (:goal (and

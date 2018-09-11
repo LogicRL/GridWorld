@@ -29,8 +29,9 @@ class GridMinecraftEnv(Env):
         'C': cliff, where the actor can fall into and die;
         'K': key, with which the actor can open the chest;
         'B': chest, inside which the magic sword is locked;
-        'M': monster, which can only be killed by the magic sword.
-        'G': gate, which the actor needs to get through.
+        'M': monster guarded gate, where the monster can only be killed by the 
+             magic sword and which the actor needs to get through.
+        'G': monster free gate, which the actor needs to get through.
     """
 
     def __init__(self):
@@ -44,7 +45,7 @@ class GridMinecraftEnv(Env):
                           ['X', 'X', 'X', '.', 'X', 'X', 'X', 'X', '.', 'K', 'C'],
                           ['X', '.', '.', '.', '.', '.', '.', 'X', 'X', 'C', 'C'],
                           ['C', 'C', '.', 'X', 'X', '.', 'X', 'X', 'X', 'X', 'X'],
-                          ['C', 'B', '.', 'X', '.', '.', '.', '.', 'M', 'G', 'X'],
+                          ['C', 'B', '.', 'X', '.', '.', '.', '.', '.', 'M', 'X'],
                           ['C', 'C', 'C', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']]
         self.reviving_spot = (1,1)
 
@@ -275,11 +276,10 @@ class GridMinecraftEnv(Env):
             elif symbol == 'M':
                 self.actor_spot = spot
                 if self.actor_status['sword']:
-                    r = self.R_running_cost
-                    done = False
+                    r = self.R_gate_reward
                 else:
                     r = self.R_dead_cost
-                    done = True
+                done = True
             
             elif symbol == 'G':
                 self.actor_spot = spot
@@ -290,7 +290,7 @@ class GridMinecraftEnv(Env):
                 assert(False)
 
         else:
-            # spot not remains if actor gets out of the world map
+            # spot remains if actor gets out of the world map
             self.actor_spot = self.actor_spot
             r = self.R_running_cost
             done = False
@@ -312,4 +312,3 @@ class GridMinecraftEnv(Env):
         return (GridMinecraftEnv._render_env(self.s), self.r, self.done, {
             'actor_spot': self.actor_spot,
             'actor_status': self.actor_status})
-

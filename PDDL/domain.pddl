@@ -11,7 +11,7 @@
         :typing
     )
 
-    (:types key chest sword monster gate)
+    (:types key chest sword gate ggate)
 
     ; (:constants
     ; 
@@ -22,9 +22,8 @@
         (actorWithKey)
         (chestExists ?chest - chest)
         (actorWithSword)
-        (monsterExists ?monster - monster)
         (freeGateExists ?gate - gate)
-        (guardedGateExists ?monster - monster ?gate - gate)
+        (guardedGateExists ?ggate - ggate)
         (actorReachedGate)
     )
 
@@ -60,18 +59,6 @@
         )
     )
 
-    (:action killMonster
-        ; kill a monster with a magic sword
-        :parameters (?monster - monster)
-        :precondition (and
-            (monsterExists ?monster)
-            (actorWithSword)
-        )
-        :effect (and
-            (not (monsterExists ?monster))
-        )
-    )
-
     (:action goToFreeGate
         ; go the a free gate without being guarded by a monster
         :parameters (?gate - gate)
@@ -86,10 +73,10 @@
 
     (:action goToGuardedGate
         ; go the a gate guarded by a monster
-        :parameters (?monster - monster ?gate - gate)
+        :parameters (?ggate - ggate)
         :precondition (and
-            (guardedGateExists ?monster ?gate)
-            (not (monsterExists ?monster))
+            (guardedGateExists ?ggate)
+            (actorWithSword)
             (not (actorReachedGate))
         )
         :effect (and
