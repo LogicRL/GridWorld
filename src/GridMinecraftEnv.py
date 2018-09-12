@@ -34,10 +34,33 @@ class GridMinecraftEnv(Env):
         'G': monster free gate, which the actor needs to get through.
     """
 
-    def __init__(self):
+    def _find_reviving_spots(self):
+        """
+        Find all potential reviving spots.
+
+        @return An array of all potential reviving spots.
+        """
+
+        reviving_spots = []
+
+        for i in range(len(self.world_map)):
+            for j in range(len(self.world_map[i])):
+                if self.world_map[i][j] == '.':
+                    reviving_spots.append((i, j))
+
+        return reviving_spots
+        
+
+    def __init__(self, options={}):
         """
         Initialize a new Grid Minecraft environment.
+
+        @param options Environment initialization options. (optional)
         """
+
+        self._random_reviving = False
+        if 'random_reviving' in options:
+            self._random_reviving = options['random_reviving']
 
         # define Grid Minecraft environment
         self.world_map = [['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
@@ -47,7 +70,8 @@ class GridMinecraftEnv(Env):
                           ['C', 'C', '.', 'X', 'X', '.', 'X', 'X', 'X', 'X', 'X'],
                           ['C', 'B', '.', 'X', '.', '.', '.', '.', '.', 'M', 'X'],
                           ['C', 'C', 'C', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']]
-        self.reviving_spot = (1,1)
+
+        self._reviving_spots = self._find_reviving_spots()
 
         self.max_horizon = 100
 
@@ -168,6 +192,19 @@ class GridMinecraftEnv(Env):
         print('')
 
 
+    def _random_reviving_spot(self):
+        """
+        Generate a random reviving spot.
+
+        @param A tuple indicating the reviving spot.
+        """
+
+        idx = np.random.choice(range(len(self._reviving_spots)))
+        spot = self._reviving_spots[idx]
+
+        return spot
+
+
     def reset(self):
         """
         Reset the environment.
@@ -175,7 +212,7 @@ class GridMinecraftEnv(Env):
 
         # reset internal state
         self.cur_steps = 0
-        self.actor_spot = tuple(self.reviving_spot)
+        self.actor_spot = self._random_reviving_spot() if self._random_reviving else self._reviving_spots[0]
         self.actor_status['key'] = False
         self.actor_status['sword'] = False
 
