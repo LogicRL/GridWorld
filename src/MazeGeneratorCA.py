@@ -2,7 +2,7 @@
 
 """
 MazeGeneratorCA.py
-Grid Minecraft maze automated generator with cellular automata.
+Grid Minecraft automated maze generator with cellular automata.
 """
 
 __version__     = "0.0.1"
@@ -14,9 +14,6 @@ __copyright__   = "Copyright (C) 2018, David Qiu. All rights reserved."
 
 import numpy as np
 from scipy.signal import convolve2d as conv2d
-
-from gym import Env, spaces
-from gym.utils import seeding
 
 
 class MazeGeneratorCA(object):
